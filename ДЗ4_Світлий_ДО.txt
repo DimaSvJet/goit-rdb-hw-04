@@ -1,0 +1,74 @@
+CREATE DATABASE LibraryManagement;
+
+CREATE TABLE authors (
+author_id INT AUTO_INCREMENT PRIMARY KEY,
+author_name VARCHAR(150)
+);
+
+CREATE TABLE genres (
+	genre_id INT AUTO_INCREMENT PRIMARY KEY,
+    genre_name VARCHAR(150)
+);
+
+CREATE TABLE books (
+	book_id INT AUTO_INCREMENT PRIMARY KEY,
+    title  VARCHAR(250),
+    publication_year YEAR,
+    author_id INT,
+    genre_id INT,
+    FOREIGN KEY (author_id) REFERENCES authors (author_id),
+	FOREIGN KEY (genre_id) REFERENCES genres (genre_id)
+);
+
+CREATE TABLE users (
+user_id INT AUTO_INCREMENT PRIMARY KEY,
+username VARCHAR(50),
+email VARCHAR(50)
+);
+
+CREATE TABLE borrowed_books (
+borrow_id INT AUTO_INCREMENT PRIMARY KEY,
+book_id INT,
+user_id INT,
+borrow_date DATE,
+return_date DATE,
+FOREIGN KEY (book_id) REFERENCES books (book_id),
+FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
+
+INSERT INTO authors (author_name)
+VALUES ('Taras Shevchenko'), ('Ivan Franko');
+
+INSERT INTO genres (genre_name)
+VALUES ('lyric'), ('drama'), ('story');
+
+INSERT INTO books (title, publication_year, author_id, genre_id)
+VALUES ('Kobzar', 2022, 1, 1), ('Zakhar Berkut', 1998, 2, 3);
+
+INSERT INTO users (username, email)
+VALUES ('Didenko Valeryi', 'valeraDid@gmail.com'), ('Zavertiaeva Nadezda','NadiaZav@gmail.com');
+
+INSERT INTO borrowed_books (book_id, user_id, borrow_date, return_date)
+VALUES (4, 1, '2024-06-21', '2024-07-21'),(3, 2, '2024-07-01', '2024-07-18');
+
+select * from borrowed_books;
+
+USE goit_database;
+
+SELECT cat.name, COUNT(*) AS count_group, AVG(od.quantity) AS avg_quant
+FROM order_details od
+	RIGHT JOIN orders o ON od.order_id = o.id
+    LEFT JOIN products p ON od.product_id = p.id
+    LEFT JOIN categories cat ON p.category_id = cat.id
+    LEFT JOIN suppliers s ON p.supplier_id = s.id
+    LEFT JOIN shippers ship ON o.shipper_id = ship.id
+    LEFT JOIN customers c ON o.customer_id = c.id
+    LEFT JOIN employees e ON o.employee_id = e.employee_id
+WHERE e.employee_id > 3 AND e.employee_id <= 10
+GROUP BY cat.name
+HAVING avg_quant > 21
+ORDER BY count_group DESC
+LIMIT 4 OFFSET 1
+
+Відповідь на питання: "Змініть декілька операторів INNER на LEFT чи RIGHT. Визначте, що відбувається з кількістю рядків. Чому? Напишіть відповідь у текстовому файлі."
+У мене не заважаючи на те, як я змінював зв'язки між таблицями, результати не змінювались, тобто результат був стабільний - 518 строк. Дослідивши, я прийшов до висновка, що такий стабільний результат надає таблиця order_details, яка має всі можливі id зв'язки з іншими талицями, тобто id строки цієї таблиця набагато ширші, та включають всі id інших таблиць. Інша справа була б як би якісь id не співпадали, тоді б були б відхилення.
